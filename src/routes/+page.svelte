@@ -13,7 +13,7 @@
 
   let connectionID = ''
   let roomID = ''
-  let VITE_BACKENTURL = import.meta.env.VITE_BACKENDURL
+  let VITE_BACKENTURL = 'http://13.61.18.186'
   // async function test() {
   //   // const test = await SignalR.invoke('Test', 'nani')
   //   const test = await SignalR.invoke('CheckShipPositions', 'nani')
