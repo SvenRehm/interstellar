@@ -21,6 +21,7 @@ export class GamePrep extends Scene {
   grid = [] // 2D array to track occupied cells
   rectangles = [] // Array to store draggable rectangles
   readyButtonText: string = 'Ready'
+  playButton: any
 
   // Initialize gridInfo
   gridInfo = Array(this.gridSize)
@@ -43,9 +44,22 @@ export class GamePrep extends Scene {
     this.createDraggableRectangle(200, 300, 50, 200)
     this.createDraggableRectangle(400, 250, 50, 250)
 
-    const playButton = this.add
-      .text(500, 500, this.readyButtonText, { fill: '#0f0' })
-      .setInteractive()
+    // this.gameText = this.add.text(
+    //   20,
+    //   20,
+    //   'Make something fun!\nand share it with us:\nsupport@phaser.io',
+    //   {
+    //     fontFamily: 'Arial Black',
+    //     fontSize: 30,
+    //     color: '#ffffff',
+    //     stroke: '#000000',
+    //     strokeThickness: 1,
+    //     align: 'center'
+    //   }
+    // )
+    this.playButton = this.add
+      .text(600, 260, this.readyButtonText, { fill: '#0f0', align: 'center', fontSize: 24 })
+      .setInteractive({ useHandCursor: true })
       .on('pointerdown', () => this.sendGridtoSocket())
 
     // this.createDraggableRectangle(300, 200, 150, 100)
@@ -60,17 +74,12 @@ export class GamePrep extends Scene {
       if (data === true) {
         this.scene.start('Game')
       } else {
-        // this.readyButtonText = 'waiting on second player...'
-        // this.add.text(700, 500, 'Other player is ready', { fill: '#0f0' })
-        // playButton.setText(this.readyButtonText)
       }
       console.log(data)
     })
 
     this.createUI()
-    // this.camera.setBackgroundColor(0x000000)
-    // #6b32a8
-    this.camera.setBackgroundColor(0x6b32a8)
+    this.camera.setBackgroundColor(0x140b2e)
 
     // this.background = this.add.image(512, 384, '../assets/background')
     // this.background.setAlpha(0.5)
@@ -88,6 +97,8 @@ export class GamePrep extends Scene {
 
     window.gamestate.fields = this.grid
     await SignalR.invoke('CheckShipPositions', json)
+    this.readyButtonText = 'Waiting on second player...'
+    this.playButton.setText(this.readyButtonText)
   }
 
   drawGrid2(x, y) {
@@ -109,10 +120,11 @@ export class GamePrep extends Scene {
 
   drawGrid(cols, rows, x, y) {
     for (let x = 0; x <= cols * this.GRID_SIZE; x += this.GRID_SIZE) {
-      this.add.line(0, 0, x, 0, x, this.scale.height, 0x555555).setOrigin(0, 0)
+      this.add.line(0, 0, x, 0, x, cols * this.GRID_SIZE, 0x5b40ae).setOrigin(0, 0)
     }
+
     for (let y = 0; y <= rows * this.GRID_SIZE; y += this.GRID_SIZE) {
-      this.add.line(0, 0, 0, y, this.scale.width, y, 0x555555).setOrigin(0, 0)
+      this.add.line(0, 0, 0, y, cols * this.GRID_SIZE, y, 0x5b40ae).setOrigin(0, 0)
     }
   }
 
@@ -163,7 +175,7 @@ export class GamePrep extends Scene {
   }
 
   createDraggableRectangle(x, y, width, height) {
-    const rect = this.add.rectangle(x, y, width, height, 0xff0000).setOrigin(0, 0)
+    const rect = this.add.rectangle(x, y, width, height, 0x61076b).setOrigin(0, 0)
     rect.setStrokeStyle(2, 0xffffff) // Add border for better visibility
 
     // Add rectangle to the array
@@ -179,24 +191,9 @@ export class GamePrep extends Scene {
       // Snap the rectangle visually while dragging
       gameObject.x = Phaser.Math.Snap.To(dragX, this.GRID_SIZE)
       gameObject.y = Phaser.Math.Snap.To(dragY, this.GRID_SIZE)
-      gameObject.x = Phaser.Math.Snap.To(dragX - gridOffsetX, this.GRID_SIZE) + gridOffsetX
-      gameObject.y = Phaser.Math.Snap.To(dragY - gridOffsetY, this.GRID_SIZE) + gridOffsetY
-
-      // Clear previous grid occupation
-      // this.updateGridOccupation(gameObject, width, height, false)
-      //
-      // // Snap to grid while dragging
-      // gameObject.x = Phaser.Math.Snap.To(dragX, this.GRID_SIZE)
-      // gameObject.y = Phaser.Math.Snap.To(dragY, this.GRID_SIZE)
-      //
-      // // Update grid occupation with the new position
-      // this.updateGridOccupation(gameObject, width, height, true)
-      //
-      // // Log updated grid for debugging
-      // console.log('Updated Grid:', this.grid)
     })
+
     this.input.on('dragstart', (pointer, gameObject) => {
-      // Store the rectangle's previous grid position
       const { rect, width, height } = this.rectangles.find((r) => r.rect === gameObject)
       gameObject.prevGridPosition = {
         colStart: Math.floor(gameObject.x / this.GRID_SIZE),

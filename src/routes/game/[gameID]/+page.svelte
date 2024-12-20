@@ -73,6 +73,7 @@
 
 <style>
   #app {
+    background-color: #140b2e;
     width: 100%;
     height: 100vh;
     overflow: hidden;

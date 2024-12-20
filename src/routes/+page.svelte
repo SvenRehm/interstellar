@@ -2,7 +2,6 @@
   import { onMount } from 'svelte'
   import SignalR from '../game/SignalR'
   import { goto } from '$app/navigation'
-  import type { FetchResult } from 'vite/runtime'
 
   let roomCode = ''
   let dialogElement: HTMLDialogElement
@@ -14,7 +13,7 @@
 
   let connectionID = ''
   let roomID = ''
-
+  let VITE_BACKENTURL = import.meta.env.VITE_BACKENDURL
   // async function test() {
   //   // const test = await SignalR.invoke('Test', 'nani')
   //   const test = await SignalR.invoke('CheckShipPositions', 'nani')
@@ -23,8 +22,7 @@
 
   async function joinRoom() {
     connectionID = SignalR.getConnectionID()
-    console.log(import.meta.env.VITE_BACKENDURL)
-    const url = `${import.meta.env.VITE_BACKENDURL}/api/Session/JoinRoom/${connectionID}/${roomCode}`
+    const url = `${VITE_BACKENTURL}/api/Session/JoinRoom/${connectionID}/${roomCode}`
 
     try {
       const response = await fetch(url, { method: 'POST' })
@@ -45,7 +43,7 @@
   async function handleCreateRoom() {
     connectionID = SignalR.getConnectionID()
     console.log('createRooom')
-    const url = `${import.meta.env.VITE_BACKENDURL}/api/Session/CreateRoom/${connectionID}`
+    const url = `${VITE_BACKENTURL}/api/Session/CreateRoom/${connectionID}`
     try {
       const response = await fetch(url, { method: 'POST' })
       if (!response.ok) {
@@ -66,16 +64,18 @@
 
   onMount(() => {
     window.gamestate = {}
-    SignalR.connect(`${import.meta.env.VITE_BACKENDURL}/hub`)
+    SignalR.connect(`${VITE_BACKENTURL}/hub`)
     connection = SignalR.getConnection()
     connectionID = SignalR.getConnectionID()
 
     connection.on('CreatedRoom', (data, message) => {
       roomID = data.roomId
       playerOne = data.hostSessionId
-      // SignalR.setRoomId(data.roomId)
-      console.log(data, 'createrRoom')
-      console.log(connectionID, 'connectionID')
+
+      window.gamestate.isPlayerOne = true
+      isPlayerOne = true
+      // console.log(data, 'createrRoom')
+      // console.log(connectionID, 'connectionID')
     })
 
     connection.on('PlayerJoinedRoom', (data, message) => {
@@ -136,16 +136,16 @@
       </div>
       <div class="players-list">
         <h3>Current Players:</h3>
-        {playerOne}
-        {playerTwo}
-        <!-- <ul> -->
-        <!--   {#each players as player, i} -->
-        <!--     <li class:current={player === currentPlayer}> -->
-        <!--       {player} -->
-        <!--       {player === currentPlayer ? '(You)' : ''} -->
-        <!--     </li> -->
-        <!--   {/each} -->
-        <!-- </ul> -->
+        <!-- {playerOne} -->
+        <!-- {playerTwo} -->
+        <ul>
+          <li class={isPlayerOne ? 'current' : ''}>
+            {isPlayerOne ? 'Player 1 (You)' : 'Player 1'}
+          </li>
+          <li class={isPlayerTwo ? 'current' : ''}>
+            {isPlayerTwo ? 'Player 2 (You)' : ''}
+          </li>
+        </ul>
       </div>
       <!-- <button disabled={!isPlayerOne} class="play-button" on:click={startGame}>Play</button> -->
       <button class="play-button" on:click={startGame}>Play</button>

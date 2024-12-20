@@ -67,6 +67,7 @@
 
 <style>
   #app {
+    background: 140B2E;
     width: 100%;
     height: 100vh;
     overflow: hidden;

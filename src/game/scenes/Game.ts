@@ -26,6 +26,7 @@ export class Game extends Scene {
   myboard: any
   enemyboard: any
   playerTurn: number = 1
+  turnText: any
 
   constructor(sock: any) {
     super('Game')
@@ -53,21 +54,17 @@ export class Game extends Scene {
       .fill(null)
       .map(() => Array(this.gridSize).fill({ shipid: 0, fieldstatus: 0 }))
 
-    this.gameText = this.add.text(
-      20,
-      20,
-      'Make something fun!\nand share it with us:\nsupport@phaser.io',
-      {
-        fontFamily: 'Arial Black',
-        fontSize: 30,
-        color: '#ffffff',
-        stroke: '#000000',
-        strokeThickness: 1,
-        align: 'center'
-      }
-    )
+    this.turnText = this.add.text(100, 20, 'Player ' + this.playerTurn + ' turn', {
+      fontFamily: 'Arial Black',
+      fontSize: 30,
+      color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 1,
+      align: 'center'
+    })
 
     this.camera = this.cameras.main
+
     this.connection = SignalR.getConnection()
 
     this.connection.on('Fired', (data) => {
@@ -77,18 +74,19 @@ export class Game extends Scene {
       const cellSize = this.cellSize
       const x = 100
       const y = 200
+      this.turnText.setText(`Player ${nextturn} turn`)
 
-      console.log(nextturn, status, 'turn, status')
-      console.log(this.playerTurn, 'playerturn')
-      console.log(data.x, data.y, 'row,col')
+      // console.log(nextturn, status, 'turn, status')
+      // console.log(this.playerTurn, 'playerturn')
+      // console.log(data.x, data.y, 'row,col')
 
       if (window.gamestate.isPlayerOne && nextturn != 1) {
         console.log('player 1 shot dont update the board')
         this.playerTurn = nextturn
+
         const ex = this.cameras.main.width - 400
         const ey = 200
         this.enemyboard[data.x][data.y].fieldstatus = status
-        console.log(this.enemyboard[data.x][data.y])
         if (this.enemyboard[data.x][data.y].fieldstatus === 2) {
           const shipPart = this.add
             .rectangle(
@@ -127,7 +125,6 @@ export class Game extends Scene {
         const ex = this.cameras.main.width - 400
         const ey = 200
         this.enemyboard[data.x][data.y].fieldstatus = status
-        // console.log(this.enemyboard[data.x][data.y])
         if (this.enemyboard[data.x][data.y].fieldstatus === 2) {
           const shipPart = this.add
             .rectangle(
@@ -195,77 +192,17 @@ export class Game extends Scene {
       }
 
       this.playerTurn = nextturn
-      console.log(this.myboard)
-      console.log(data)
+      // console.log(this.myboard)
+      // console.log(data)
     })
 
     this.createUI()
-    // this.camera.setBackgroundColor(0x00ff00)
-    this.camera.setBackgroundColor(0x8446c7)
 
-    // this.background = this.add.image(512, 384, 'background')
-    // this.background.setAlpha(0.5)
-
-    // this.gameText = this.add
-    //   .text(512, 384, 'Make something fun!\nand share it with us:\nsupport@phaser.io', {
-    //     fontFamily: 'Arial Black',
-    //     fontSize: 38,
-    //     color: '#ffffff',
-    //     stroke: '#000000',
-    //     strokeThickness: 8,
-    //     align: 'center'
-    //   })
-    //   .setOrigin(0.5)
-    //   .setDepth(100)
-    // const graphics = this.add.graphics()
-    // graphics.lineStyle(1, 0x00ff00, 1) // Line thickness, color, and alpha
-    //
-    // const cellSize = 32 // Size of each grid cell
-    // const gridWidth = 800 // Width of the grid
-    // const gridHeight = 600 // Height of the grid
-    //
-    // // Draw vertical lines
-    // for (let x = 0; x <= gridWidth; x += cellSize) {
-    //   graphics.moveTo(x, 0) // Start point
-    //   graphics.lineTo(x, gridHeight) // End point
-    // }
-    //
-    // // Draw horizontal lines
-    // for (let y = 0; y <= gridHeight; y += cellSize) {
-    //   graphics.moveTo(0, y) // Start point
-    //   graphics.lineTo(gridWidth, y) // End point
-    // }
-    //
-    // graphics.strokePath() // Finalize the drawing
-
+    this.camera.setBackgroundColor(0x140b2e)
     EventBus.emit('current-scene-ready', this)
   }
 
-  // initWebSocket() {
-  //   this.socket = new WebSocket('ws://localhost:3000')
-  //   this.socket.onopen = () => {
-  //     console.log('WebSocket connection established')
-  //   }
-  //
-  //   const test = {
-  //     value: 33,
-  //     more: 'test'
-  //   }
-  //
-  //   // setTimeout(() => {
-  //   //   this.socket.send(JSON.stringify(test))
-  //   // }, 3000)
-  //
-  //   this.socket.onmessage = (event) => {
-  //     // console.log(event)
-  //     const message = JSON.parse(event.data)
-  //     this.handleServerMessage(message)
-  //   }
-  // }
-
   createGameBoards() {
-    // this.playerBoard = this.createBoard(100, 200, 'Player', true)
-
     let playerText
     //@ts-ignore
     if (window.gamestate.isPlayerOne == true) {
@@ -273,7 +210,7 @@ export class Game extends Scene {
     } else {
       playerText = 'Player 2'
     }
-    this.playerBoard = this.createBoard2(100, 200, playerText, true)
+    this.playerBoard = this.createBoard2(100, 200, playerText + '(You)', true)
     this.opponentBoard = this.createBoard2(this.cameras.main.width - 400, 200, 'Opponent', false)
   }
 
@@ -312,10 +249,11 @@ export class Game extends Scene {
           y + row * cellSize + cellSize / 2,
           cellSize - 1,
           cellSize - 1,
-          0x666666
+          0x140b2e
         )
 
-        tile.setStrokeStyle(1, 0xffffff)
+        // this.add.line(0, 0, x, 0, x, cols * this.GRID_SIZE, 0x5b40ae).setOrigin(0, 0)
+        tile.setStrokeStyle(0.4, 0x5b40ae)
 
         if (this.myboard[row][col].fieldstatus === 1 && isPlayerBoard) {
           const shipPart = this.add
@@ -407,7 +345,7 @@ export class Game extends Scene {
     return result
   }
 
-  async handleTileClick(row, col, tile) {
+  async handleTileClick(row: number, col: number, tile: string) {
     if (window.gamestate.isPlayerOne && this.playerTurn != 1) {
       console.log('is player one', this.playerTurn)
       return
@@ -416,24 +354,9 @@ export class Game extends Scene {
     if (window.gamestate.isPlayerTwo && this.playerTurn != 2) {
       console.log('is player two', this.playerTurn)
       return
-      console.log('player 2 shot dont update the board')
     }
 
-    console.log(row, col)
-    console.log(tile)
-
-    // if (this.currentPhase !== 'PLAY') return
-    const test = await this.fire(row, col)
-    // SignalR.invoke('Fire', 'test')
-
-    console.log(test)
-    // console.log('nani')
-    // Send attack coordinates to server
-    // this.sendMessage('ATTACK', {
-    //   row,
-    //   col,
-    //   roomCode: this.roomCode
-    // })
+    await this.fire(row, col)
   }
 
   createUI() {
