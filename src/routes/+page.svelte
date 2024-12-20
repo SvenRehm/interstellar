@@ -1,8 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import SignalR from '../game/SignalR'
-  //@ts-ignore
-  import { PUBLIC_BACKENDURL } from '$env/static/public'
+  import { env } from '$env/dynamic/private'
   import { goto } from '$app/navigation'
   import type { FetchResult } from 'vite/runtime'
 
@@ -25,7 +24,7 @@
 
   async function joinRoom() {
     connectionID = SignalR.getConnectionID()
-    const url = `${PUBLIC_BACKENDURL}/api/Session/JoinRoom/${connectionID}/${roomCode}`
+    const url = `${env.PUBLIC_BACKENDURL}/api/Session/JoinRoom/${connectionID}/${roomCode}`
 
     try {
       const response = await fetch(url, { method: 'POST' })
@@ -46,8 +45,8 @@
   async function handleCreateRoom() {
     connectionID = SignalR.getConnectionID()
     console.log('createRooom')
-    console.log(PUBLIC_BACKENDURL, 'test')
-    const url = `${PUBLIC_BACKENDURL}/api/Session/CreateRoom/${connectionID}`
+    console.log(env.PUBLIC_BACKENDURL, 'test')
+    const url = `${env.PUBLIC_BACKENDURL}/api/Session/CreateRoom/${connectionID}`
     try {
       const response = await fetch(url, { method: 'POST' })
       if (!response.ok) {
@@ -68,7 +67,7 @@
 
   onMount(() => {
     window.gamestate = {}
-    SignalR.connect(`${PUBLIC_BACKENDURL}/hub`)
+    SignalR.connect(`${env.PUBLIC_BACKENDURL}/hub`)
     connection = SignalR.getConnection()
     connectionID = SignalR.getConnectionID()
 
